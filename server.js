@@ -4,7 +4,7 @@ const app = require('./app');
 
 // Load env vars
 dotenv.config();
-
+// require('node:dns').setServers(['1.1.1.1','8.8.8.8'])
 // Connect to database
 connectDB();
 
