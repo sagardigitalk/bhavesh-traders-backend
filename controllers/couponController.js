@@ -16,7 +16,20 @@ const getCoupons = asyncHandler(async (req, res) => {
 });
 
 const createCoupon = asyncHandler(async (req, res) => {
-  const { code, type, discountValue, minOrder, validUntil, usageLimit, label } = req.body;
+  const {
+    code,
+    type,
+    discountValue,
+    minOrder,
+    validUntil,
+    usageLimit,
+    label,
+    description,
+    startDate,
+    bannerBackground,
+    bannerTextColor,
+    bannerAccentColor,
+  } = req.body;
 
   const existing = await Coupon.findOne({ code: code.trim().toUpperCase() });
   if (existing) {
@@ -33,6 +46,11 @@ const createCoupon = asyncHandler(async (req, res) => {
     usageLimit: usageLimit || 0,
     used: 0,
     label: label || '',
+    description: description || '',
+    startDate: startDate ? new Date(startDate) : undefined,
+    bannerBackground: bannerBackground || undefined,
+    bannerTextColor: bannerTextColor || undefined,
+    bannerAccentColor: bannerAccentColor || undefined,
     isActive: true,
   });
 
@@ -40,8 +58,21 @@ const createCoupon = asyncHandler(async (req, res) => {
 });
 
 const updateCoupon = asyncHandler(async (req, res) => {
-  const { code, type, discountValue, minOrder, validUntil, usageLimit, label, isActive } =
-    req.body;
+  const {
+    code,
+    type,
+    discountValue,
+    minOrder,
+    validUntil,
+    usageLimit,
+    label,
+    description,
+    startDate,
+    bannerBackground,
+    bannerTextColor,
+    bannerAccentColor,
+    isActive,
+  } = req.body;
 
   const coupon = await Coupon.findById(req.params.id);
 
@@ -67,6 +98,13 @@ const updateCoupon = asyncHandler(async (req, res) => {
   }
   if (usageLimit !== undefined) coupon.usageLimit = usageLimit;
   if (label !== undefined) coupon.label = label;
+  if (description !== undefined) coupon.description = description;
+  if (startDate !== undefined) {
+    coupon.startDate = startDate ? new Date(startDate) : undefined;
+  }
+  if (bannerBackground !== undefined) coupon.bannerBackground = bannerBackground;
+  if (bannerTextColor !== undefined) coupon.bannerTextColor = bannerTextColor;
+  if (bannerAccentColor !== undefined) coupon.bannerAccentColor = bannerAccentColor;
   if (typeof isActive === 'boolean') coupon.isActive = isActive;
 
   const updated = await coupon.save();
@@ -104,6 +142,10 @@ const validateCoupon = asyncHandler(async (req, res) => {
   }
 
   const now = new Date();
+  if (coupon.startDate && coupon.startDate > now) {
+    res.status(400);
+    throw new Error('Coupon is not yet active');
+  }
   if (coupon.validUntil && coupon.validUntil < now) {
     res.status(400);
     throw new Error('Coupon has expired');
@@ -135,10 +177,33 @@ const validateCoupon = asyncHandler(async (req, res) => {
   });
 });
 
+const getActiveOffers = asyncHandler(async (req, res) => {
+  const now = new Date();
+  const offers = await Coupon.find({
+    isActive: true,
+    $and: [
+      {
+        $or: [{ startDate: { $lte: now } }, { startDate: { $exists: false } }, { startDate: null }],
+      },
+      {
+        $or: [{ validUntil: { $gte: now } }, { validUntil: { $exists: false } }, { validUntil: null }],
+      },
+    ],
+  })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .select(
+      'code type discountValue minOrder label description startDate validUntil bannerBackground bannerTextColor bannerAccentColor'
+    );
+
+  res.json(offers);
+});
+
 module.exports = {
   getCoupons,
   createCoupon,
   updateCoupon,
   deleteCoupon,
   validateCoupon,
+  getActiveOffers,
 };

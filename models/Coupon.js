@@ -41,6 +41,26 @@ const couponSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
+    description: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    startDate: {
+      type: Date,
+    },
+    bannerBackground: {
+      type: String,
+      default: '#1E293B',
+    },
+    bannerTextColor: {
+      type: String,
+      default: '#FACC15',
+    },
+    bannerAccentColor: {
+      type: String,
+      default: '#F97316',
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -54,4 +74,3 @@ const couponSchema = new mongoose.Schema(
 const Coupon = mongoose.model('Coupon', couponSchema);
 
 module.exports = Coupon;
-
