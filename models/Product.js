@@ -23,6 +23,11 @@ const productSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    images: [
+      {
+        type: String,
+      },
+    ],
     badge: {
       type: String,
       enum: ['Best Seller', 'New', 'Popular', 'Fresh', 'Sale', 'Limited', ''],

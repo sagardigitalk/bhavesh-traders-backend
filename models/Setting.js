@@ -15,6 +15,10 @@ const settingSchema = new mongoose.Schema(
       franchiseLeads: { type: Boolean, default: true },
       emailReports: { type: Boolean, default: false },
     },
+    shipping: {
+      baseCharge: { type: Number, default: 50 },
+      freeAbove: { type: Number, default: 500 },
+    },
   },
   {
     timestamps: true,
@@ -24,4 +28,3 @@ const settingSchema = new mongoose.Schema(
 const Setting = mongoose.model('Setting', settingSchema);
 
 module.exports = Setting;
-

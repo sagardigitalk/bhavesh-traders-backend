@@ -33,13 +33,21 @@ const getProductById = async (req, res) => {
 // @access  Private/Admin
 const createProduct = async (req, res) => {
   try {
-    const { name, price, description, image, category, badge, stock } = req.body;
+    const { name, price, description, image, images, category, badge, stock } = req.body;
+
+    const imageArray =
+      Array.isArray(images) && images.length > 0
+        ? images
+        : image
+        ? [image]
+        : [];
 
     const product = new Product({
       name,
       price,
       description,
       image,
+      images: imageArray,
       category,
       badge,
       stock,
@@ -57,7 +65,7 @@ const createProduct = async (req, res) => {
 // @access  Private/Admin
 const updateProduct = async (req, res) => {
   try {
-    const { name, price, description, image, category, badge, stock } = req.body;
+    const { name, price, description, image, images, category, badge, stock } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -65,7 +73,14 @@ const updateProduct = async (req, res) => {
       product.name = name || product.name;
       product.price = price || product.price;
       product.description = description || product.description;
-      product.image = image || product.image;
+      if (image) {
+        product.image = image;
+      }
+      if (Array.isArray(images) && images.length > 0) {
+        product.images = images;
+      } else if (!product.images || product.images.length === 0) {
+        product.images = product.image ? [product.image] : [];
+      }
       product.category = category || product.category;
       product.badge = badge || product.badge;
       product.stock = stock || product.stock;

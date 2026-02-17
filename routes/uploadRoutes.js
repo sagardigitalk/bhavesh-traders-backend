@@ -46,4 +46,10 @@ router.post('/', upload.single('image'), (req, res) => {
   res.send(`/${req.file.path}`);
 });
 
+router.post('/multiple', upload.array('images', 10), (req, res) => {
+  const files = req.files || [];
+  const paths = files.map((file) => `/${file.path}`);
+  res.send(paths);
+});
+
 module.exports = router;

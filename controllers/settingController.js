@@ -23,7 +23,7 @@ const getSettings = asyncHandler(async (req, res) => {
 const updateSettings = asyncHandler(async (req, res) => {
   const setting = await getOrCreateSettings();
 
-  const { business, notifications } = req.body;
+  const { business, notifications, shipping } = req.body;
 
   if (business) {
     setting.business = {
@@ -39,12 +39,32 @@ const updateSettings = asyncHandler(async (req, res) => {
     };
   }
 
+  if (shipping) {
+    setting.shipping = {
+      ...(setting.shipping ? setting.shipping.toObject() : {}),
+      ...shipping,
+    };
+  }
+
   const updated = await setting.save();
   res.json(updated);
+});
+
+// @desc    Get public settings (for website)
+// @route   GET /api/settings/public
+// @access  Public
+const getPublicSettings = asyncHandler(async (req, res) => {
+  const setting = await getOrCreateSettings();
+  res.json({
+    shipping: {
+      baseCharge: setting.shipping?.baseCharge ?? 50,
+      freeAbove: setting.shipping?.freeAbove ?? 500,
+    },
+  });
 });
 
 module.exports = {
   getSettings,
   updateSettings,
+  getPublicSettings,
 };
-
